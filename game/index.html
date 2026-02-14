@@ -52,6 +52,25 @@
   const boxImg  = new Image(); boxImg.src  = cfg.boxUrl || "";
   const bgImg   = new Image(); if(cfg.bgUrl) bgImg.src = cfg.bgUrl;
 
+  /* ✅ ДОБАВЛЕНО: ЗВУКИ */
+  const moveSound = new Audio("./ресурсы/tank-move.mp3");
+  const shotSound = new Audio("./ресурсы/tank-shot.mp3");
+  moveSound.loop = true;
+  moveSound.volume = 0.25;
+  shotSound.volume = 0.4;
+
+  let audioUnlocked = false;
+  function unlockAudio(){
+    if(audioUnlocked) return;
+    audioUnlocked = true;
+    // “разбудим” звук после первого действия (иначе браузер блокирует)
+    moveSound.play().then(() => { moveSound.pause(); moveSound.currentTime = 0; }).catch(()=>{});
+    shotSound.play().then(() => { shotSound.pause(); shotSound.currentTime = 0; }).catch(()=>{});
+  }
+  addEventListener("pointerdown", unlockAudio, { once:true });
+  addEventListener("keydown", unlockAudio, { once:true });
+  /* ✅ КОНЕЦ ДОБАВЛЕНИЯ */
+
   const boxCount  = Math.max(1, Math.min(15, Number(cfg.boxCount)||7));
   const speedBase = Math.max(1, Math.min(10, Number(cfg.speed)||4));
   const tankScale = Math.max(0.5, Math.min(5, Number(cfg.tankScale)||1));
@@ -128,6 +147,13 @@
   const BULLET_R = 4 * bulletScale;
 
   function shoot(){
+    /* ✅ ДОБАВЛЕНО: звук выстрела */
+    if(audioUnlocked){
+      try{ shotSound.currentTime = 0; }catch(e){}
+      shotSound.play().catch(()=>{});
+    }
+    /* ✅ КОНЕЦ ДОБАВЛЕНИЯ */
+
     const cx = tank.x + tank.w/2;
     const cy = tank.y + tank.h/2;
     const sp = 9;
@@ -177,6 +203,20 @@
     const topPad = 70;
     tank.x = Math.max(0, Math.min(canvas.width - tank.w, tank.x));
     tank.y = Math.max(topPad, Math.min(canvas.height - tank.h, tank.y));
+
+    /* ✅ ДОБАВЛЕНО: звук движения */
+    const moving = (Math.abs(tank.vx) + Math.abs(tank.vy)) > 0.35;
+    if(audioUnlocked){
+      if(moving){
+        if(moveSound.paused) moveSound.play().catch(()=>{});
+      }else{
+        if(!moveSound.paused){
+          moveSound.pause();
+          moveSound.currentTime = 0;
+        }
+      }
+    }
+    /* ✅ КОНЕЦ ДОБАВЛЕНИЯ */
 
     if(keys[" "]){
       keys[" "] = false;
@@ -292,4 +332,3 @@
 </script>
 </body>
 </html>
-
