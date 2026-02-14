@@ -52,12 +52,6 @@
   const boxImg  = new Image(); boxImg.src  = cfg.boxUrl || "";
   const bgImg   = new Image(); if(cfg.bgUrl) bgImg.src = cfg.bgUrl;
 
-  // 🔊 звук
-  const moveSound = new Audio("./assets/tank-move.mp3");
-  moveSound.loop = true;
-
-  const shotSound = new Audio("./assets/tank-shot.mp3");
-
   const boxCount  = Math.max(1, Math.min(15, Number(cfg.boxCount)||7));
   const speedBase = Math.max(1, Math.min(10, Number(cfg.speed)||4));
   const tankScale = Math.max(0.5, Math.min(5, Number(cfg.tankScale)||1));
@@ -68,6 +62,15 @@
 
   const BASE_TANK_W = 90;
   const BASE_BOX = 80;
+
+  /* === ЗВУК (исправлено) === */
+  const moveSound = new Audio("./assets/tank-move.mp3");
+  moveSound.loop = true;
+  moveSound.volume = 0.25;
+
+  const shotSound = new Audio("./assets/tank-shot.mp3");
+  shotSound.volume = 0.5;
+  /* === конец исправления === */
 
   const keys = {};
   addEventListener("keydown", e => { keys[e.key] = true; active = true; });
@@ -112,7 +115,6 @@
   }
   spawnBoxes();
 
-  // ✅ награды: ждём [{img}]
   const rewards = Array.isArray(cfg.rewards) ? cfg.rewards.slice(0,15) : [];
   function pushReward(i){
     const r = rewards[i];
@@ -146,6 +148,7 @@
 
     bullets.push({x:cx,y:cy,vx,vy,life:120});
 
+    /* === звук выстрела ТОЛЬКО тут === */
     shotSound.currentTime = 0;
     shotSound.play().catch(()=>{});
   }
@@ -161,6 +164,12 @@
     const right = keys["ArrowRight"]|| keys["d"] || keys["D"];
     const up    = keys["ArrowUp"]   || keys["w"] || keys["W"];
     const down  = keys["ArrowDown"] || keys["s"] || keys["S"];
+
+    if(left||right||up||down){
+      if(moveSound.paused) moveSound.play().catch(()=>{});
+    }else{
+      moveSound.pause();
+    }
 
     if(left)  ax -= accel;
     if(right) ax += accel;
@@ -191,13 +200,6 @@
       keys[" "] = false;
       shoot();
     }
-
-    if(Math.abs(tank.vx) > 0.1 || Math.abs(tank.vy) > 0.1){
-      if(moveSound.paused) moveSound.play().catch(()=>{});
-    }else{
-      moveSound.pause();
-      moveSound.currentTime = 0;
-    }
   }
 
   function updateBullets(){
@@ -214,10 +216,7 @@
         if(b.x > box.x - pad && b.x < box.x + boxSize + pad && b.y > box.y - pad && b.y < box.y + boxSize + pad){
           box.alive = false;
           b.life = 0;
-
-          // ✅ добавляем следующую награду
           pushReward(hud.children.length);
-
           break;
         }
       }
