@@ -52,24 +52,11 @@
   const boxImg  = new Image(); boxImg.src  = cfg.boxUrl || "";
   const bgImg   = new Image(); if(cfg.bgUrl) bgImg.src = cfg.bgUrl;
 
-  /* ✅ ДОБАВЛЕНО: ЗВУКИ */
-  const moveSound = new Audio("./ресурсы/tank-move.mp3");
-  const shotSound = new Audio("./ресурсы/tank-shot.mp3");
+  // 🔊 звук
+  const moveSound = new Audio("./assets/tank-move.mp3");
   moveSound.loop = true;
-  moveSound.volume = 0.25;
-  shotSound.volume = 0.4;
 
-  let audioUnlocked = false;
-  function unlockAudio(){
-    if(audioUnlocked) return;
-    audioUnlocked = true;
-    // “разбудим” звук после первого действия (иначе браузер блокирует)
-    moveSound.play().then(() => { moveSound.pause(); moveSound.currentTime = 0; }).catch(()=>{});
-    shotSound.play().then(() => { shotSound.pause(); shotSound.currentTime = 0; }).catch(()=>{});
-  }
-  addEventListener("pointerdown", unlockAudio, { once:true });
-  addEventListener("keydown", unlockAudio, { once:true });
-  /* ✅ КОНЕЦ ДОБАВЛЕНИЯ */
+  const shotSound = new Audio("./assets/tank-shot.mp3");
 
   const boxCount  = Math.max(1, Math.min(15, Number(cfg.boxCount)||7));
   const speedBase = Math.max(1, Math.min(10, Number(cfg.speed)||4));
@@ -147,13 +134,6 @@
   const BULLET_R = 4 * bulletScale;
 
   function shoot(){
-    /* ✅ ДОБАВЛЕНО: звук выстрела */
-    if(audioUnlocked){
-      try{ shotSound.currentTime = 0; }catch(e){}
-      shotSound.play().catch(()=>{});
-    }
-    /* ✅ КОНЕЦ ДОБАВЛЕНИЯ */
-
     const cx = tank.x + tank.w/2;
     const cy = tank.y + tank.h/2;
     const sp = 9;
@@ -165,6 +145,9 @@
     if(tank.dir==="down"){vx=0;vy=sp;}
 
     bullets.push({x:cx,y:cy,vx,vy,life:120});
+
+    shotSound.currentTime = 0;
+    shotSound.play().catch(()=>{});
   }
 
   const accel = 0.35 * (speedBase/4);
@@ -204,23 +187,16 @@
     tank.x = Math.max(0, Math.min(canvas.width - tank.w, tank.x));
     tank.y = Math.max(topPad, Math.min(canvas.height - tank.h, tank.y));
 
-    /* ✅ ДОБАВЛЕНО: звук движения */
-    const moving = (Math.abs(tank.vx) + Math.abs(tank.vy)) > 0.35;
-    if(audioUnlocked){
-      if(moving){
-        if(moveSound.paused) moveSound.play().catch(()=>{});
-      }else{
-        if(!moveSound.paused){
-          moveSound.pause();
-          moveSound.currentTime = 0;
-        }
-      }
-    }
-    /* ✅ КОНЕЦ ДОБАВЛЕНИЯ */
-
     if(keys[" "]){
       keys[" "] = false;
       shoot();
+    }
+
+    if(Math.abs(tank.vx) > 0.1 || Math.abs(tank.vy) > 0.1){
+      if(moveSound.paused) moveSound.play().catch(()=>{});
+    }else{
+      moveSound.pause();
+      moveSound.currentTime = 0;
     }
   }
 
