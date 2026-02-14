@@ -17,7 +17,6 @@
     background:rgba(255,255,255,.10);
     border:1px solid rgba(255,255,255,.10);
     display:flex;align-items:center;justify-content:center;
-    color:#d7f7ff;font:700 14px/1 system-ui,Segoe UI,Arial;
     overflow:hidden;
   }
   .slot img{width:100%;height:100%;object-fit:contain}
@@ -55,11 +54,9 @@
 
   const boxCount  = Math.max(1, Math.min(15, Number(cfg.boxCount)||7));
   const speedBase = Math.max(1, Math.min(10, Number(cfg.speed)||4));
-
   const tankScale = Math.max(0.5, Math.min(5, Number(cfg.tankScale)||1));
   const boxScale  = Math.max(0.5, Math.min(5, Number(cfg.boxScale)||1));
 
-  // ✅ снаряд
   const bulletScale = Math.max(0.5, Math.min(5, Number(cfg.bulletScale)||1));
   const bulletRound = !!cfg.bulletRound;
 
@@ -77,13 +74,11 @@
   canvas.addEventListener("pointerdown", () => { active = true; canvas.focus(); });
 
   const tank = {
-    x: 0,
-    y: 0,
+    x: 0, y: 0,
     w: BASE_TANK_W * tankScale,
     h: 60,
     dir: "right",
-    vx: 0,
-    vy: 0
+    vx: 0, vy: 0
   };
 
   function placeTank(){
@@ -111,22 +106,19 @@
   }
   spawnBoxes();
 
+  // ✅ награды: ждём [{img}]
   const rewards = Array.isArray(cfg.rewards) ? cfg.rewards.slice(0,15) : [];
   function pushReward(i){
     const r = rewards[i];
-    if(!r) return;
+    if(!r || !r.img) return;
 
     const slot = document.createElement("div");
     slot.className = "slot";
 
-    if(r.img){
-      const im = new Image();
-      im.src = r.img;
-      slot.appendChild(im);
-      im.onerror = () => { slot.textContent = (r.word||"").slice(0,2).toUpperCase(); };
-    } else {
-      slot.textContent = (r.word||"").slice(0,2).toUpperCase();
-    }
+    const im = new Image();
+    im.src = r.img;
+    slot.appendChild(im);
+
     hud.appendChild(slot);
   }
 
@@ -156,7 +148,6 @@
     if(!active) return;
 
     let ax = 0, ay = 0;
-
     const left  = keys["ArrowLeft"] || keys["a"] || keys["A"];
     const right = keys["ArrowRight"]|| keys["d"] || keys["D"];
     const up    = keys["ArrowUp"]   || keys["w"] || keys["W"];
@@ -175,17 +166,13 @@
       if(ay > 0) tank.dir="down";
     }
 
-    tank.vx += ax;
-    tank.vy += ay;
-
-    tank.vx *= 0.86;
-    tank.vy *= 0.86;
+    tank.vx += ax; tank.vy += ay;
+    tank.vx *= 0.86; tank.vy *= 0.86;
 
     tank.vx = Math.max(-maxV, Math.min(maxV, tank.vx));
     tank.vy = Math.max(-maxV, Math.min(maxV, tank.vy));
 
-    tank.x += tank.vx;
-    tank.y += tank.vy;
+    tank.x += tank.vx; tank.y += tank.vy;
 
     const topPad = 70;
     tank.x = Math.max(0, Math.min(canvas.width - tank.w, tank.x));
@@ -199,9 +186,7 @@
 
   function updateBullets(){
     for(const b of bullets){
-      b.x += b.vx;
-      b.y += b.vy;
-      b.life -= 1;
+      b.x += b.vx; b.y += b.vy; b.life -= 1;
     }
 
     for(const b of bullets){
@@ -213,7 +198,10 @@
         if(b.x > box.x - pad && b.x < box.x + boxSize + pad && b.y > box.y - pad && b.y < box.y + boxSize + pad){
           box.alive = false;
           b.life = 0;
+
+          // ✅ добавляем следующую награду
           pushReward(hud.children.length);
+
           break;
         }
       }
@@ -304,3 +292,4 @@
 </script>
 </body>
 </html>
+
