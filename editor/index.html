@@ -212,7 +212,7 @@
       boxScale:  clampNum(boxScale.value, 0.5, 5, 1),
       bulletScale: clampNum(bulletScale.value, 0.5, 5, 1),
       bulletRound: bulletRound.checked,
-      rewards: state.rewards.slice(0, 15)
+      rewards: state.rewards.slice(0, 12)
     };
   }
 
@@ -231,7 +231,7 @@
   el("addReward").onclick = () => {
     const img = rewardImg.value.trim();
     if(!img){ rewardImg.focus(); return; }
-    if(state.rewards.length >= 15) return;
+    if(state.rewards.length >= 12) return;
     state.rewards.push({img});
     rewardImg.value = "";
     renderRewards();
