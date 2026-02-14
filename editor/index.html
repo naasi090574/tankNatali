@@ -8,12 +8,9 @@
   :root{
     --bg:#070c1e;
     --panel: rgba(14,20,45,.62);
-    --panel2: rgba(10,16,38,.55);
     --txt:#d7f7ff;
     --muted:#9bb7c4;
     --btn:#2f6dff;
-    --btn2:#1d3a8a;
-    --danger:#b14a4a;
     --r:18px;
     --shadow: 0 18px 60px rgba(0,0,0,.45);
   }
@@ -30,14 +27,14 @@
   input::placeholder,textarea::placeholder{color:rgba(255,255,255,.35)}
   .btn{width:100%;border:0;border-radius:12px;padding:11px 12px;font-weight:700;color:white;background:linear-gradient(180deg,var(--btn),#1b4fe0);cursor:pointer}
   .btn.secondary{background:rgba(255,255,255,.10);color:var(--txt)}
-  .divider{height:1px;background:rgba(255,255,255,.10);margin:14px 0}
   .hint{font-size:12px;color:var(--muted);line-height:1.35;margin:10px 0}
+  .divider{height:1px;background:rgba(255,255,255,.10);margin:14px 0}
   .rewards{display:flex;flex-direction:column;gap:10px}
   .rewardItem{display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.08)}
-  .rewardItem img{width:40px;height:40px;object-fit:contain;border-radius:10px;background:rgba(255,255,255,.12)}
+  .rewardItem img{width:44px;height:44px;object-fit:contain;border-radius:10px;background:rgba(255,255,255,.12)}
   .rewardText{flex:1}
   .rewardText b{display:block;font-size:14px}
-  .rewardText small{color:var(--muted)}
+  .rewardText small{color:var(--muted);word-break:break-all}
   .x{width:34px;height:34px;border-radius:12px;border:0;background:rgba(177,74,74,.25);color:#ffdede;font-weight:900;cursor:pointer}
   .previewBar{
     position:absolute;left:0;right:0;top:0;
@@ -48,165 +45,215 @@
   }
   .previewBar .pill{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.10);font-size:12px;color:var(--muted)}
   iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent}
-  textarea{min-height:94px;resize:vertical}
+  textarea{min-height:110px;resize:vertical}
   .stickyBtns{position:sticky;bottom:0;background:linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.25));padding:10px 0 0;margin-top:10px}
 </style>
 </head>
 <body>
-<div class="wrap">
-<div class="card left">
-<h1>Редактор «Танковая миссия»</h1>
+  <div class="wrap">
+    <div class="card left">
+      <h1>Редактор «Танковая миссия»</h1>
 
-<div class="grid2">
-<div>
-<label>Количество ящиков (1–15)</label>
-<input id="boxCount" type="number" min="1" max="15" value="7" />
-</div>
-<div>
-<label>Сложность (скорость танка)</label>
-<input id="speed" type="number" min="1" max="10" step="0.5" value="4" />
-</div>
-</div>
+      <div class="grid2">
+        <div>
+          <label>Количество ящиков (1–15)</label>
+          <input id="boxCount" type="number" min="1" max="15" value="7" />
+        </div>
+        <div>
+          <label>Сложность (скорость танка)</label>
+          <input id="speed" type="number" min="1" max="10" step="0.5" value="4" />
+        </div>
+      </div>
 
-<div class="grid2">
-<div>
-<label>Размер танка (0.5–5)</label>
-<input id="tankScale" type="number" min="0.5" max="5" step="0.1" value="1" />
-</div>
-<div>
-<label>Размер ящика (0.5–5)</label>
-<input id="boxScale" type="number" min="0.5" max="5" step="0.1" value="1" />
-</div>
-</div>
+      <div class="grid2">
+        <div>
+          <label>Размер танка (0.5–5)</label>
+          <input id="tankScale" type="number" min="0.5" max="5" step="0.1" value="1" />
+        </div>
+        <div>
+          <label>Размер ящика (0.5–5)</label>
+          <input id="boxScale" type="number" min="0.5" max="5" step="0.1" value="1" />
+        </div>
+      </div>
 
-<div class="grid2">
-<div>
-<label>Размер снаряда (0.5–5)</label>
-<input id="bulletScale" type="number" min="0.5" max="5" step="0.1" value="1" />
-</div>
-<div>
-<label>Круглый снаряд</label>
-<input id="bulletRound" type="checkbox" checked />
-</div>
-</div>
+      <div class="grid2">
+        <div>
+          <label>Размер снаряда (0.5–5)</label>
+          <input id="bulletScale" type="number" min="0.5" max="5" step="0.1" value="1" />
+        </div>
+        <div>
+          <label>Круглый снаряд</label>
+          <input id="bulletRound" type="checkbox" checked />
+        </div>
+      </div>
 
-<label>Танк (URL)</label>
-<input id="tankUrl" placeholder="https://.../tank.png" />
-<button class="btn secondary" id="resetTank">Вернуть стандартный танк</button>
+      <label>Танк (URL)</label>
+      <input id="tankUrl" placeholder="https://.../tank.png" />
 
-<label>Ящик (URL)</label>
-<input id="boxUrl" placeholder="https://.../box.png" />
-<button class="btn secondary" id="resetBox">Вернуть стандартный ящик</button>
+      <label>Ящик (URL)</label>
+      <input id="boxUrl" placeholder="https://.../box.png" />
 
-<label>Фон поля (URL)</label>
-<input id="bgUrl" placeholder="https://.../background.png" />
+      <label>Фон поля (URL) — можно оставить пустым</label>
+      <input id="bgUrl" placeholder="https://.../background.png" />
 
-<div class="divider"></div>
+      <div class="divider"></div>
 
-<h1 style="font-size:16px;margin:0 0 6px">Награды</h1>
+      <h1 style="font-size:16px;margin:0 0 6px">Награды</h1>
+      <div class="hint">Добавляй до 15 картинок. В игре после попадания они появятся сверху.</div>
 
-<div class="grid2">
-<div>
-<label>Слово</label>
-<input id="rewardWord" />
-</div>
-<div>
-<label>Картинка</label>
-<input id="rewardImg" />
-</div>
-</div>
+      <label>Картинка награды (URL)</label>
+      <input id="rewardImg" placeholder="https://.../item.png" />
 
-<button class="btn" id="addReward">Добавить награду</button>
-<div class="rewards" id="rewardsList"></div>
+      <button class="btn" id="addReward">Добавить награду</button>
+      <div class="rewards" id="rewardsList" style="margin-top:10px;"></div>
 
-<div class="divider"></div>
+      <div class="divider"></div>
 
-<div class="stickyBtns">
-<button class="btn" id="refresh">Обновить предпросмотр</button>
-<button class="btn secondary" id="copy">Скопировать код</button>
-<textarea id="iframeCode" readonly></textarea>
-</div>
-</div>
+      <div class="stickyBtns">
+        <button class="btn" id="refresh">Обновить предпросмотр</button>
+        <button class="btn secondary" id="copy">Скопировать код</button>
 
-<div class="card right">
-<iframe id="preview"></iframe>
-</div>
-</div>
+        <label style="margin-top:10px">Код (iframe) — вставь в Genially → Insert → Others</label>
+        <textarea id="iframeCode" readonly></textarea>
+        <div class="hint">Если не копируется — нажми «Скопировать код» ещё раз, либо выдели текст и Ctrl+C.</div>
+      </div>
+    </div>
+
+    <div class="card right">
+      <div class="previewBar">
+        <div class="pill">Предпросмотр игры</div>
+        <div class="pill">WASD/стрелки — движение • Пробел — выстрел</div>
+      </div>
+      <iframe id="preview" title="preview"></iframe>
+    </div>
+  </div>
 
 <script>
 (() => {
-const DEFAULT_TANK="https://img.genially.com/66f849d0f7b39c0016fdd814/552d49a1-b37f-40f1-a992-18c2aa55ed84.gif";
-const DEFAULT_BOX="https://img.genially.com/66f849d0f7b39c0016fdd814/9bfc40ad-c0ef-4bb9-a006-30014520bb33.png";
+  const DEFAULT_TANK = "https://img.genially.com/66f849d0f7b39c0016fdd814/552d49a1-b37f-40f1-a992-18c2aa55ed84.gif";
+  const DEFAULT_BOX  = "https://img.genially.com/66f849d0f7b39c0016fdd814/9bfc40ad-c0ef-4bb9-a006-30014520bb33.png";
 
-const el=id=>document.getElementById(id);
+  const el = (id) => document.getElementById(id);
 
-const tankUrl=el("tankUrl");
-const boxUrl=el("boxUrl");
-const bgUrl=el("bgUrl");
-const boxCount=el("boxCount");
-const speed=el("speed");
-const tankScale=el("tankScale");
-const boxScale=el("boxScale");
-const bulletScale=el("bulletScale");
-const bulletRound=el("bulletRound");
-const rewardWord=el("rewardWord");
-const rewardImg=el("rewardImg");
-const rewardsList=el("rewardsList");
-const iframeCode=el("iframeCode");
-const preview=el("preview");
+  const tankUrl   = el("tankUrl");
+  const boxUrl    = el("boxUrl");
+  const bgUrl     = el("bgUrl");
+  const boxCount  = el("boxCount");
+  const speed     = el("speed");
+  const tankScale = el("tankScale");
+  const boxScale  = el("boxScale");
+  const bulletScale = el("bulletScale");
+  const bulletRound = el("bulletRound");
 
-const state={rewards:[]};
+  const rewardImg  = el("rewardImg");
+  const rewardsList = el("rewardsList");
+  const iframeCode  = el("iframeCode");
+  const preview     = el("preview");
 
-function clampNum(v,min,max,fallback){
-const n=Number(v);
-if(Number.isFinite(n)) return Math.max(min,Math.min(max,n));
-return fallback;
-}
+  const state = { rewards: [] }; // {img}
 
-function buildConfig(){
-return{
-tankUrl:tankUrl.value||DEFAULT_TANK,
-boxUrl:boxUrl.value||DEFAULT_BOX,
-bgUrl:bgUrl.value||"",
-boxCount:clampNum(boxCount.value,1,15,7),
-speed:clampNum(speed.value,1,10,4),
-tankScale:clampNum(tankScale.value,0.5,5,1),
-boxScale:clampNum(boxScale.value,0.5,5,1),
-bulletScale:clampNum(bulletScale.value,0.5,5,1),
-bulletRound:bulletRound.checked,
-rewards:state.rewards
-};
-}
+  function clampNum(v, min, max, fallback){
+    const n = Number(v);
+    if (Number.isFinite(n)) return Math.max(min, Math.min(max, n));
+    return fallback;
+  }
 
-function buildIframe(){
-const cfg=buildConfig();
-const q=encodeURIComponent(JSON.stringify(cfg));
+  function renderRewards(){
+    rewardsList.innerHTML = "";
+    state.rewards.forEach((r, idx) => {
+      const row = document.createElement("div");
+      row.className = "rewardItem";
 
-/* ← ВОТ ЕДИНСТВЕННАЯ ИЗМЕНЁННАЯ СТРОКА */
-const src=`https://naasi090574.github.io/tankNatali/game/index.html?config=${q}&v=${Date.now()}`;
+      const img = document.createElement("img");
+      img.src = r.img || "data:image/svg+xml;utf8," + encodeURIComponent(
+        `<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'>
+          <rect width='100%' height='100%' rx='18' fill='rgba(255,255,255,.15)'/>
+          <text x='50%' y='56%' text-anchor='middle' font-family='Arial' font-size='18' fill='white'>IMG</text>
+        </svg>`
+      );
 
-iframeCode.value=`<iframe style="width:100%;height:100%;border:0" src="${src}" allow="autoplay"></iframe>`;
-return src;
-}
+      const text = document.createElement("div");
+      text.className = "rewardText";
+      text.innerHTML = `<b>Награда ${idx+1}</b><small>${r.img || "—"}</small>`;
 
-function updatePreview(){
-preview.src=buildIframe();
-}
+      const x = document.createElement("button");
+      x.className = "x";
+      x.textContent = "×";
+      x.onclick = () => {
+        state.rewards.splice(idx,1);
+        renderRewards();
+        updatePreview();
+      };
 
-el("addReward").onclick=()=>{
-state.rewards.push({word:rewardWord.value,img:rewardImg.value});
-rewardWord.value="";
-rewardImg.value="";
-updatePreview();
-};
+      row.appendChild(img);
+      row.appendChild(text);
+      row.appendChild(x);
+      rewardsList.appendChild(row);
+    });
+  }
 
-el("refresh").onclick=updatePreview;
+  function buildConfig(){
+    return {
+      tankUrl: tankUrl.value.trim() || DEFAULT_TANK,
+      boxUrl:  boxUrl.value.trim()  || DEFAULT_BOX,
+      bgUrl:   bgUrl.value.trim()   || "",
+      boxCount: clampNum(boxCount.value, 1, 15, 7),
+      speed:    clampNum(speed.value, 1, 10, 4),
+      tankScale: clampNum(tankScale.value, 0.5, 5, 1),
+      boxScale:  clampNum(boxScale.value, 0.5, 5, 1),
+      bulletScale: clampNum(bulletScale.value, 0.5, 5, 1),
+      bulletRound: bulletRound.checked,
+      rewards: state.rewards.slice(0, 15) // [{img}]
+    };
+  }
 
-el("copy").onclick=async()=>{
-await navigator.clipboard.writeText(iframeCode.value);
-};
+  function buildIframe(){
+    const cfg = buildConfig();
+    const q = encodeURIComponent(JSON.stringify(cfg));
+    const src = `https://naasi090574.github.io/tankNatali/game/index.html?config=${q}&v=${Date.now()}`;
+    iframeCode.value = `<iframe style="width:100%;height:100%;border:0" src="${src}" allow="autoplay; fullscreen"></iframe>`;
+    return src;
+  }
 
-updatePreview();
+  function updatePreview(){
+    preview.src = buildIframe();
+  }
+
+  el("addReward").onclick = () => {
+    const img = rewardImg.value.trim();
+    if(!img) { rewardImg.focus(); return; }
+    if(state.rewards.length >= 15) return;
+
+    state.rewards.push({img});
+    rewardImg.value = "";
+    renderRewards();
+    updatePreview();
+  };
+
+  el("refresh").onclick = updatePreview;
+
+  el("copy").onclick = async () => {
+    // 1) пробуем современный буфер
+    try{
+      await navigator.clipboard.writeText(iframeCode.value);
+      return;
+    }catch(e){}
+
+    // 2) fallback для Genially/iframe
+    iframeCode.focus();
+    iframeCode.select();
+    try{ document.execCommand("copy"); }catch(e){}
+  };
+
+  [tankUrl,boxUrl,bgUrl,boxCount,speed,tankScale,boxScale,bulletScale].forEach(inp=>{
+    inp.addEventListener("input", updatePreview);
+  });
+  bulletRound.addEventListener("change", updatePreview);
+
+  tankUrl.value = DEFAULT_TANK;
+  boxUrl.value = DEFAULT_BOX;
+  renderRewards();
+  updatePreview();
 })();
 </script>
 </body>
