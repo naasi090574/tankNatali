@@ -137,16 +137,31 @@ canvas{display:block;width:100%;height:100%}
 
   function spawnBoxes(){
     boxes.length = 0;
-    const topPad = 70;
-    const edge = 20;
-    for(let i=0;i<boxCount;i++){
-      boxes.push({
-        alive:true,
-        x: rand(edge, canvas.width - boxSize - edge),
-        y: rand(topPad, canvas.height - boxSize - edge)
-      });
-    }
+    const topPad = 140;
+  const edge = 30;
+  const gap = 20;
+
+  function intersects(x,y){
+    return boxes.some(b =>
+      Math.abs(b.x - x) < boxSize + gap &&
+      Math.abs(b.y - y) < boxSize + gap
+    );
   }
+
+  for(let i=0;i<boxCount;i++){
+    let tries = 0;
+    let x,y;
+
+    do{
+      x = rand(edge, canvas.width - boxSize - edge);
+      y = rand(topPad, canvas.height - boxSize - edge);
+      tries++;
+      if(tries > 200) break;
+    }while(intersects(x,y));
+
+    boxes.push({alive:true,x,y});
+  }
+}
   spawnBoxes();
 
   /* ✅ награды: берём максимум 12 (как ты хочешь) */
