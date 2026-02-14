@@ -4,33 +4,46 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Танковая миссия — игра</title>
+
 <style>
-  html,body{margin:0;height:100%;background:#000;overflow:hidden}
-  canvas{display:block;width:100%;height:100%}
-  #hud{
-    position:fixed;left:10px;top:10px;z-index:10;
-    display:flex;gap:8px;flex-wrap:wrap;max-width:70vw;
-    pointer-events:none;
-  }
-  .slot{
-    width:100px;height:100px;border-radius:14px;
-    background:rgba(255,255,255,.10);
-    border:1px solid rgba(255,255,255,.10);
-    display:flex;align-items:center;justify-content:center;
-    overflow:hidden;
-  }
-  .slot img{width:100%;height:100%;object-fit:contain}
-  #help{
-    position:fixed;right:12px;top:12px;z-index:10;
-    color:rgba(215,247,255,.65);font:12px/1.3 system-ui,Segoe UI,Arial;
-    background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.08);
-    padding:8px 10px;border-radius:12px;
-  }
+html,body{margin:0;height:100%;background:#000;overflow:hidden}
+canvas{display:block;width:100%;height:100%}
+
+/* ✅ панель наград — один ряд */
+#hud{
+  position:fixed;
+  left:0;
+  right:0;
+  top:10px;
+  z-index:10;
+
+  display:flex;
+  justify-content:center;
+  gap:6px;
+  flex-wrap:nowrap;
+
+  pointer-events:none;
+}
+
+/* ✅ уменьшенные картинки */
+.slot{
+  width:70px;
+  height:70px;
+  border-radius:12px;
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.10);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+.slot img{width:100%;height:100%;object-fit:contain}
 </style>
 </head>
+
 <body>
 <div id="hud"></div>
-<div id="help">WASD/стрелки — движение • Пробел — выстрел</div>
 <canvas id="c"></canvas>
 
 <script>
@@ -62,22 +75,6 @@
 
   const BASE_TANK_W = 90;
   const BASE_BOX = 80;
-
-  /* === ЗВУК (исправлено: выстрел только после "разрешения") === */
-  const moveSound = new Audio("./assets/tank-move.mp3");
-  moveSound.loop = true;
-  moveSound.volume = 0.25;
-
-  const shotSound = new Audio("./assets/tank-shot.mp3");
-  shotSound.volume = 0.5;
-
-  let audioUnlocked = false;
-  function unlockAudio(){
-    audioUnlocked = true;
-  }
-  addEventListener("pointerdown", unlockAudio, { once:true });
-  addEventListener("keydown", unlockAudio, { once:true });
-  /* === конец исправления === */
 
   const keys = {};
   addEventListener("keydown", e => { keys[e.key] = true; active = true; });
@@ -123,6 +120,7 @@
   spawnBoxes();
 
   const rewards = Array.isArray(cfg.rewards) ? cfg.rewards.slice(0,15) : [];
+
   function pushReward(i){
     const r = rewards[i];
     if(!r || !r.img) return;
@@ -148,21 +146,12 @@
     const sp = 9;
 
     let vx=sp, vy=0;
-    if(tank.dir==="left"){vx=-sp;vy=0;}
-    if(tank.dir==="right"){vx=sp;vy=0;}
+    if(tank.dir==="left"){vx=-sp;}
+    if(tank.dir==="right"){vx=sp;}
     if(tank.dir==="up"){vx=0;vy=-sp;}
     if(tank.dir==="down"){vx=0;vy=sp;}
 
     bullets.push({x:cx,y:cy,vx,vy,life:120});
-
-    /* ✅ звук выстрела — ТОЛЬКО если звук разрешён */
-    if(audioUnlocked){
-      try{
-        shotSound.pause();
-        shotSound.currentTime = 0;
-      }catch(e){}
-      shotSound.play().catch(()=>{});
-    }
   }
 
   const accel = 0.35 * (speedBase/4);
@@ -177,16 +166,6 @@
     const up    = keys["ArrowUp"]   || keys["w"] || keys["W"];
     const down  = keys["ArrowDown"] || keys["s"] || keys["S"];
 
-    /* ✅ звук движения — тоже только если звук разрешён */
-    if(audioUnlocked){
-      if(left||right||up||down){
-        if(moveSound.paused) moveSound.play().catch(()=>{});
-      }else{
-        moveSound.pause();
-        moveSound.currentTime = 0;
-      }
-    }
-
     if(left)  ax -= accel;
     if(right) ax += accel;
     if(up)    ay -= accel;
@@ -200,13 +179,17 @@
       if(ay > 0) tank.dir="down";
     }
 
-    tank.vx += ax; tank.vy += ay;
-    tank.vx *= 0.86; tank.vy *= 0.86;
+    tank.vx += ax;
+    tank.vy += ay;
+
+    tank.vx *= 0.86;
+    tank.vy *= 0.86;
 
     tank.vx = Math.max(-maxV, Math.min(maxV, tank.vx));
     tank.vy = Math.max(-maxV, Math.min(maxV, tank.vy));
 
-    tank.x += tank.vx; tank.y += tank.vy;
+    tank.x += tank.vx;
+    tank.y += tank.vy;
 
     const topPad = 70;
     tank.x = Math.max(0, Math.min(canvas.width - tank.w, tank.x));
@@ -220,18 +203,27 @@
 
   function updateBullets(){
     for(const b of bullets){
-      b.x += b.vx; b.y += b.vy; b.life -= 1;
+      b.x += b.vx;
+      b.y += b.vy;
+      b.life--;
     }
 
     for(const b of bullets){
       if(b.life <= 0) continue;
+
       for(const box of boxes){
         if(!box.alive) continue;
 
         const pad = bulletRound ? BULLET_R : Math.max(BULLET_W, BULLET_H);
-        if(b.x > box.x - pad && b.x < box.x + boxSize + pad && b.y > box.y - pad && b.y < box.y + boxSize + pad){
+
+        if(b.x > box.x - pad &&
+           b.x < box.x + boxSize + pad &&
+           b.y > box.y - pad &&
+           b.y < box.y + boxSize + pad){
+
           box.alive = false;
           b.life = 0;
+
           pushReward(hud.children.length);
           break;
         }
@@ -248,13 +240,13 @@
 
   function drawBackground(){
     if(cfg.bgUrl && bgImg.complete){
-      ctx.drawImage(bgImg, 0,0, canvas.width, canvas.height);
-    } else {
-      const g = ctx.createLinearGradient(0,0,0,canvas.height);
+      ctx.drawImage(bgImg,0,0,canvas.width,canvas.height);
+    }else{
+      const g=ctx.createLinearGradient(0,0,0,canvas.height);
       g.addColorStop(0,"#0b1230");
       g.addColorStop(1,"#050712");
-      ctx.fillStyle = g;
-      ctx.fillRect(0,0,canvas.width, canvas.height);
+      ctx.fillStyle=g;
+      ctx.fillRect(0,0,canvas.width,canvas.height);
     }
   }
 
@@ -266,40 +258,43 @@
   }
 
   function drawBullets(){
-    ctx.fillStyle = "rgba(255,230,120,.95)";
+    ctx.fillStyle="rgba(255,230,120,.95)";
     for(const b of bullets){
       if(bulletRound){
         ctx.beginPath();
-        ctx.arc(b.x, b.y, BULLET_R, 0, Math.PI*2);
+        ctx.arc(b.x,b.y,BULLET_R,0,Math.PI*2);
         ctx.fill();
       }else{
-        ctx.fillRect(b.x - BULLET_W/2, b.y - BULLET_H/2, BULLET_W, BULLET_H);
+        ctx.fillRect(b.x-BULLET_W/2,b.y-BULLET_H/2,BULLET_W,BULLET_H);
       }
     }
   }
 
   function drawTank(){
     if(tankImg.complete && tankImg.naturalWidth){
-      const ratio = tankImg.naturalHeight / tankImg.naturalWidth;
-      tank.h = tank.w * ratio;
+      const ratio=tankImg.naturalHeight/tankImg.naturalWidth;
+      tank.h=tank.w*ratio;
     }
 
-    const cx = tank.x + tank.w/2;
-    const cy = tank.y + tank.h/2;
+    const cx=tank.x+tank.w/2;
+    const cy=tank.y+tank.h/2;
 
-    let angle = 0;
-    let flipX = 1;
+    let angle=0;
+    let flipX=1;
 
-    if(tank.dir==="right"){ angle = 0; flipX = 1; }
-    if(tank.dir==="down") { angle = Math.PI/2; flipX = 1; }
-    if(tank.dir==="up")   { angle = -Math.PI/2; flipX = 1; }
-    if(tank.dir==="left") { angle = 0; flipX = -1; }
+    if(tank.dir==="right") angle=0;
+    if(tank.dir==="down") angle=Math.PI/2;
+    if(tank.dir==="up") angle=-Math.PI/2;
+    if(tank.dir==="left") flipX=-1;
 
     ctx.save();
-    ctx.translate(cx, cy);
+    ctx.translate(cx,cy);
     ctx.rotate(angle);
-    ctx.scale(flipX, 1);
-    if(tankImg.complete) ctx.drawImage(tankImg, -tank.w/2, -tank.h/2, tank.w, tank.h);
+    ctx.scale(flipX,1);
+
+    if(tankImg.complete)
+      ctx.drawImage(tankImg,-tank.w/2,-tank.h/2,tank.w,tank.h);
+
     ctx.restore();
   }
 
@@ -313,7 +308,7 @@
     requestAnimationFrame(loop);
   }
 
-  addEventListener("resize", () => {
+  addEventListener("resize",()=>{
     placeTank();
     spawnBoxes();
   });
