@@ -63,13 +63,20 @@
   const BASE_TANK_W = 90;
   const BASE_BOX = 80;
 
-  /* === ЗВУК (исправлено) === */
+  /* === ЗВУК (исправлено: выстрел только после "разрешения") === */
   const moveSound = new Audio("./assets/tank-move.mp3");
   moveSound.loop = true;
   moveSound.volume = 0.25;
 
   const shotSound = new Audio("./assets/tank-shot.mp3");
   shotSound.volume = 0.5;
+
+  let audioUnlocked = false;
+  function unlockAudio(){
+    audioUnlocked = true;
+  }
+  addEventListener("pointerdown", unlockAudio, { once:true });
+  addEventListener("keydown", unlockAudio, { once:true });
   /* === конец исправления === */
 
   const keys = {};
@@ -148,9 +155,14 @@
 
     bullets.push({x:cx,y:cy,vx,vy,life:120});
 
-    /* === звук выстрела ТОЛЬКО тут === */
-    shotSound.currentTime = 0;
-    shotSound.play().catch(()=>{});
+    /* ✅ звук выстрела — ТОЛЬКО если звук разрешён */
+    if(audioUnlocked){
+      try{
+        shotSound.pause();
+        shotSound.currentTime = 0;
+      }catch(e){}
+      shotSound.play().catch(()=>{});
+    }
   }
 
   const accel = 0.35 * (speedBase/4);
@@ -165,10 +177,14 @@
     const up    = keys["ArrowUp"]   || keys["w"] || keys["W"];
     const down  = keys["ArrowDown"] || keys["s"] || keys["S"];
 
-    if(left||right||up||down){
-      if(moveSound.paused) moveSound.play().catch(()=>{});
-    }else{
-      moveSound.pause();
+    /* ✅ звук движения — тоже только если звук разрешён */
+    if(audioUnlocked){
+      if(left||right||up||down){
+        if(moveSound.paused) moveSound.play().catch(()=>{});
+      }else{
+        moveSound.pause();
+        moveSound.currentTime = 0;
+      }
     }
 
     if(left)  ax -= accel;
