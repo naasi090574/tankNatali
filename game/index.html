@@ -12,8 +12,7 @@ canvas{display:block;width:100%;height:100%}
 /* ✅ панель наград — один ряд */
 #hud{
   position:fixed;
-  left:0;
-  right:0;
+  left:0; right:0;
   top:10px;
   z-index:10;
 
@@ -25,11 +24,11 @@ canvas{display:block;width:100%;height:100%}
   pointer-events:none;
 }
 
-/* ✅ уменьшенные картинки */
+/* ✅ уменьшенные картинки (влезает ~12) */
 .slot{
   width:100px;
   height:100px;
-  border-radius:12px;
+  border-radius:14px;
   background:rgba(255,255,255,.10);
   border:1px solid rgba(255,255,255,.10);
   display:flex;
@@ -37,7 +36,6 @@ canvas{display:block;width:100%;height:100%}
   justify-content:center;
   overflow:hidden;
 }
-
 .slot img{width:100%;height:100%;object-fit:contain}
 </style>
 </head>
@@ -75,6 +73,36 @@ canvas{display:block;width:100%;height:100%}
 
   const BASE_TANK_W = 90;
   const BASE_BOX = 80;
+
+  /* 🔊 ЗВУКИ (вернули) */
+  const moveSound = new Audio("./assets/tank-move.mp3");
+  moveSound.loop = true;
+  moveSound.volume = 0.25;
+
+  const shotSound = new Audio("./assets/tank-shot.mp3");
+  shotSound.volume = 0.55;
+
+  let audioUnlocked = false;
+  function unlockAudio(){ audioUnlocked = true; }
+  addEventListener("pointerdown", unlockAudio, { once:true });
+  addEventListener("keydown", unlockAudio, { once:true });
+
+  function playShot(){
+    if(!audioUnlocked) return;
+    try{ shotSound.pause(); shotSound.currentTime = 0; }catch(e){}
+    shotSound.play().catch(()=>{});
+  }
+
+  function updateMoveSound(moving){
+    if(!audioUnlocked) return;
+    if(moving){
+      if(moveSound.paused) moveSound.play().catch(()=>{});
+    }else{
+      if(!moveSound.paused) moveSound.pause();
+      try{ moveSound.currentTime = 0; }catch(e){}
+    }
+  }
+  /* конец звуков */
 
   const keys = {};
   addEventListener("keydown", e => { keys[e.key] = true; active = true; });
@@ -119,7 +147,8 @@ canvas{display:block;width:100%;height:100%}
   }
   spawnBoxes();
 
-  const rewards = Array.isArray(cfg.rewards) ? cfg.rewards.slice(0,15) : [];
+  /* ✅ награды: берём максимум 12 (как ты хочешь) */
+  const rewards = Array.isArray(cfg.rewards) ? cfg.rewards.slice(0,12) : [];
 
   function pushReward(i){
     const r = rewards[i];
@@ -146,8 +175,8 @@ canvas{display:block;width:100%;height:100%}
     const sp = 9;
 
     let vx=sp, vy=0;
-    if(tank.dir==="left"){vx=-sp;}
-    if(tank.dir==="right"){vx=sp;}
+    if(tank.dir==="left"){vx=-sp;vy=0;}
+    if(tank.dir==="right"){vx=sp;vy=0;}
     if(tank.dir==="up"){vx=0;vy=-sp;}
     if(tank.dir==="down"){vx=0;vy=sp;}
 
@@ -165,6 +194,9 @@ canvas{display:block;width:100%;height:100%}
     const right = keys["ArrowRight"]|| keys["d"] || keys["D"];
     const up    = keys["ArrowUp"]   || keys["w"] || keys["W"];
     const down  = keys["ArrowDown"] || keys["s"] || keys["S"];
+
+    const movingKeys = !!(left || right || up || down);
+    updateMoveSound(movingKeys);
 
     if(left)  ax -= accel;
     if(right) ax += accel;
@@ -195,8 +227,10 @@ canvas{display:block;width:100%;height:100%}
     tank.x = Math.max(0, Math.min(canvas.width - tank.w, tank.x));
     tank.y = Math.max(topPad, Math.min(canvas.height - tank.h, tank.y));
 
+    /* ✅ выстрел: только по пробелу */
     if(keys[" "]){
       keys[" "] = false;
+      playShot();
       shoot();
     }
   }
